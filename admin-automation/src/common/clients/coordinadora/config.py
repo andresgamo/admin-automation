@@ -76,7 +76,7 @@ class CoordinadoraClient:
                     <id_cliente>{self.user_id}</id_cliente>
                     <id_remitente>{sender.id}</id_remitente>
                     <nit_remitente>{sender.nit}</nit_remitente>
-                    <nombre_remitente>Gorilla {sender.name} SAS</nombre_remitente>
+                    <nombre_remitente>{sender.name}</nombre_remitente>
                     <direccion_remitente>{sender.address}</direccion_remitente>
                     <telefono_remitente>{sender.phone}</telefono_remitente>
                     <ciudad_remitente>{sender.city}</ciudad_remitente>
