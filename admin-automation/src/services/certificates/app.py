@@ -1,9 +1,6 @@
 import os
 import json
 import boto3
-import base64
-from services.certificates.utils import render_html
-from services.certificates.utils import html_to_pdf
 from services.certificates.utils import get_employee_dataset_by_email
 from services.certificates.utils import map_bamboo_dataset
 from common.notification.emailer import send_email

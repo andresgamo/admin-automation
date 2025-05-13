@@ -6,15 +6,6 @@ from common.utils.strings import format_spanish_date
 
 client = BambooHRClient()
 
-
-def render_html(context: dict, template_name: str) -> str:
-    pass
-
-
-def html_to_pdf(html: str) -> Tuple[str, bytes]:
-    pass
-
-
 def get_employee_dataset_by_email(email: str) -> Dict[str, Any]:
     filters = {
         "match": "all",
