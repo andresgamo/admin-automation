@@ -1,0 +1,56 @@
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>Carta Laboral - Gorilla Logic</title>
+    <style>
+        {{asset "./certificate-styles.css"}}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img class="logo" src="{{ asset './gl-logo.png' 'dataURI' }}" alt="Gorilla Logic Logo" />
+        </header>
+        <div class="content-wrapper">
+            <address class="contact">
+                <span>Gorilla Logic S.A.S.</span>
+                <span>901.264.616-8</span>
+            </address>
+            <div class="title">A Quien Interese</div>
+            <section class="content">
+                Hacemos constar que el señor
+                <strong>{{ name }}</strong>, identificado con cédula de ciudadanía No.
+                <strong>{{ document_id }}</strong>, prestó sus servicios en Gorilla Logic S.A.S. con NIT 901.264.616-8, con contrato de trabajo a término indefinido desde el
+                <strong>{{ hire_date }}</strong>, desempeñando el cargo de
+                <strong>{{ job_title }}</strong>.
+                <p>
+                    La presente se expide en Medellín el {{ current_date }}.
+                </p>
+                <p>Cordialmente,</p>
+            </section>
+        </div>
+        <div class="signature">
+            <div>
+                <img class="sign" src="{{ asset './sign.png' 'dataURI' }}" />
+            </div>
+            <span> _______________________</span>
+            <span>Ana Catalina Molina</span>
+            <span class="role">
+                <span><strong>HR Business Partner</strong></span>
+                <span><strong>Gorilla Logic S.A.S.</strong></span>
+            </span>
+            <span class="email">ana.molina@gorillalogic.com</span>
+        </div>
+        <footer>
+            <span>Buro 4.0 - Calle 1 A Sur N° 43B-70, Medellín,</span>
+            <span>Antioquia Phone: +57 314 863 2787</span>
+             
+        </footer>
+    </div>
+</body>
+
+</html>

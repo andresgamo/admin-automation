@@ -1,0 +1,26 @@
+{
+    "shortid": "rkJTnK2ce",
+    "recipe": "chrome-pdf",
+    "engine": "handlebars",
+    "data": {
+        "shortid": "Sy5S19ncg"
+    },
+    "name": "labour_none_salary",
+    "chrome": {
+        "printBackground": true,
+        "marginTop": "1cm",
+        "marginRight": "2cm",
+        "marginBottom": "1cm",
+        "marginLeft": "2cm",
+        "format": "Letter",
+        "displayHeaderFooter": false
+    },
+    "creationDate": {
+        "$$date": 1652806413969
+    },
+    "modificationDate": {
+        "$$date": 1747076267607
+    },
+    "_id": "zcYnFseTTjFShkZl",
+    "$entitySet": "templates"
+}

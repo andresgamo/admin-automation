@@ -1,45 +1,150 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   admin-automation
 
   Sample SAM Template for admin-automation
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 9
     MemorySize: 128
 
-    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
       LogFormat: JSON
+
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  AdminAutomationGateway:
+    Type: AWS::Serverless::Api
     Properties:
-      CodeUri: hello_world/
-      Handler: app.lambda_handler
-      Runtime: python3.9
+      StageName: prod
+      Name: AdminAutomationGateway
+
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-artifacts"
+
+  JsReportLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: jsreport_layer
+      Description: jsreport + headless Chromium
+      ContentUri:
+        Bucket: !Ref ArtifactsBucket
+        Key: jsreport/layer.zip
+      CompatibleRuntimes:
+        - nodejs20.x
+
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: common_layer
+      Description: shared helpers
+      ContentUri: src/common
+      CompatibleRuntimes:
+        - python3.12
+
+  OnboardingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: services/onboarding/app.lambda_handler
+      Runtime: python3.12
+      Layers:
+        - !Ref CommonLayer
+      Environment:
+        Variables:
+          GMAIL_APP_PASSWORD: "{{resolve:ssm:/admin-automation/prod/GMAIL_APP_PASSWORD}}"
+          JIRA_SERVER: "{{resolve:ssm:/admin-automation/prod/JIRA_SERVER}}"
+          JIRA_USER: "{{resolve:ssm:/admin-automation/prod/JIRA_USER}}"
+          JIRA_API_TOKEN: "{{resolve:ssm:/admin-automation/prod/JIRA_API_TOKEN}}"
+          PRIMARY_GMAIL_SENDER_ADDRESS: "{{resolve:ssm:/admin-automation/prod/PRIMARY_GMAIL_SENDER_ADDRESS}}"
+          SECONDARY_GMAIL_SENDER_ADDRESS: "{{resolve:ssm:/admin-automation/prod/SECONDARY_GMAIL_SENDER_ADDRESS}}"
+          BUDDY_PROGRAM_VENDOR_ADDRESSES: "{{resolve:ssm:/admin-automation/prod/BUDDY_PROGRAM_VENDOR_ADDRESSES}}"
+          COORDINADORA_API: "{{resolve:ssm:/admin-automation/prod/COORDINADORA_API}}"
+          COORDINADORA_USER: "{{resolve:ssm:/admin-automation/prod/COORDINADORA_USER}}"
+          COORDINADORA_USER_ID: "{{resolve:ssm:/admin-automation/prod/COORDINADORA_USER_ID}}"
+          COORDINADORA_PASSWORD: "{{resolve:ssm:/admin-automation/prod/COORDINADORA_PASSWORD}}"
+          SLACK_BOT_TOKEN: "{{resolve:ssm:/admin-automation/prod/SLACK_BOT_TOKEN}}"
+          SLACK_OB_CHANNEL_ID: "{{resolve:ssm:/admin-automation/prod/SLACK_OB_CHANNEL_ID}}"
       Architectures:
-      - x86_64
+        - x86_64
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        Endopoint:
+          Type: Api
           Properties:
-            Path: /hello
-            Method: get
+            RestApiId: !Ref AdminAutomationGateway
+            Path: /onboarding-automation
+            Method: post
+
+  JsReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs20.x
+      CodeUri: src/
+      Handler: services/jsreport/index.handler
+      Layers:
+        - !Ref JsReportLayer
+      MemorySize: 1024
+      Timeout: 60
+
+  CertificatesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: services/certificates/app.lambda_handler
+      Runtime: python3.12
+      Layers:
+        - !Ref CommonLayer
+      Environment:
+        Variables:
+          PRIMARY_GMAIL_SENDER_ADDRESS: "{{resolve:ssm:/admin-automation/prod/PRIMARY_GMAIL_SENDER_ADDRESS}}"
+          GMAIL_APP_PASSWORD: "{{resolve:ssm:/admin-automation/prod/GMAIL_APP_PASSWORD}}"
+          JIRA_SERVER: "{{resolve:ssm:/admin-automation/prod/JIRA_SERVER}}"
+          JIRA_USER: "{{resolve:ssm:/admin-automation/prod/JIRA_USER}}"
+          JIRA_API_TOKEN: "{{resolve:ssm:/admin-automation/prod/JIRA_API_TOKEN}}"
+          SLACK_BOT_TOKEN: "{{resolve:ssm:/admin-automation/prod/SLACK_BOT_TOKEN}}"
+          SLACK_OB_CHANNEL_ID: "{{resolve:ssm:/admin-automation/prod/SLACK_OB_CHANNEL_ID}}"
+          BAMBOOHR_SUBDOMAIN: "{{resolve:ssm:/admin-automation/prod/BAMBOOHR_SUBDOMAIN}}"
+          BAMBOOHR_API_KEY: "{{resolve:ssm:/admin-automation/prod/BAMBOOHR_API_KEY}}"
+          JSREPORT_FUNCTION_NAME: !Ref JsReportFunction
+      MemorySize: 1024
+      Timeout: 60
+
+      Architectures:
+        - x86_64
+      Events:
+        Endopoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AdminAutomationGateway
+            Path: /certificates
+            Method: post
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref JsReportFunction
+
+  SlackCourierGuideBotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: services/slackbot/app.lambda_handler
+      Runtime: python3.12
+      Layers:
+        - !Ref CommonLayer
+      Environment:
+        Variables:
+          SLACK_BOT_TOKEN: "{{resolve:ssm:/admin-automation/prod/SLACK_BOT_TOKEN}}"
+      Events:
+        Endopoint:
+          Type: Api
+          Properties:
+            Path: /slack-bot
+            Method: post
+            RestApiId: !Ref AdminAutomationGateway
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  ApiUrl:
+    Description: Prod endpoint
+    Value: !Sub "https://${AdminAutomationGateway}.execute‐api.${AWS::Region}.amazonaws.com/Prod"
