@@ -45,7 +45,7 @@ def normalize_attachments(attachments: AttachmentsArg) -> List[Attachment]:
     if isinstance(attachments, list) and all(
         is_single_attachment(attachment) for attachment in attachments
     ):
-        return list(attachments)
+        return attachments
 
     raise ValueError(
         "attachments must a (filename, base64-bytes) tuple, or a list of such tuples"

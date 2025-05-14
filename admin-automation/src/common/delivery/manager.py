@@ -24,9 +24,10 @@ def process_delivery(
             package=delivery.package,
             recipient=delivery.recipient,
         )
-        b64pdf = courier_client.generate_guide_file(guide_number)
+        b64str = courier_client.generate_guide_file(guide_number)
+        b64bytes  = b64str.encode()
         name = delivery.recipient.name.strip().replace(" ", "_")
         filename = f"{name}_guide_{guide_number}.pdf"
-        guides.append((filename, b64pdf))
+        guides.append((filename, b64bytes))
 
     return guides

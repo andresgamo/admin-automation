@@ -61,7 +61,7 @@ def send_buddy_program_email(buddy_program: List[Any], date) -> None:
 
 
 def send_nh_delivery_email(
-    attachments: Sequence[Tuple[str, Base64Str]],
+    attachments: List[Tuple[str, Base64Str]],
     date: str = None,
 ) -> None:
     """"""
